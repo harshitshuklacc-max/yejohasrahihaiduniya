@@ -24,24 +24,14 @@ export const studentSchema = z.object({
   parentPhone: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
-  batchId: z.string().optional().nullable(),
   totalFees: z.number().optional(),
   dueDate: z.string().optional(),
   username: z.string().optional(),
   password: z.string().optional(),
 });
 
-export const batchSchema = z.object({
-  name: z.string().min(1),
-  classLevel: z.string().min(1),
-  stream: z.string().optional(),
-  timing: z.string().optional(),
-  capacity: z.number().optional(),
-  teacherIds: z.array(z.string()).optional(),
-});
-
 export const timetableSchema = z.object({
-  batchId: z.string(),
+  classLevel: z.string(),
   slots: z.array(
     z.object({
       dayOfWeek: z.number().min(0).max(6),
@@ -55,11 +45,12 @@ export const timetableSchema = z.object({
 });
 
 export const homeworkSchema = z.object({
-  batchId: z.string(),
+  classLevel: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1),
   dueDate: z.string(),
   attachments: z.array(z.string()).optional(),
+  targetStudentIds: z.array(z.string()).optional(),
 });
 
 export const feeUpdateSchema = z.object({
@@ -87,18 +78,24 @@ export const leaveReviewSchema = z.object({
 });
 
 export const testSchema = z.object({
-  batchId: z.string(),
+  classLevel: z.string().min(1),
   subject: z.string().min(1),
   syllabus: z.string().optional(),
   testDate: z.string(),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
   instructions: z.string().optional(),
+  targetStudentIds: z.array(z.string()).optional(),
 });
 
 export const announcementSchema = z.object({
   title: z.string().min(1),
   body: z.string().min(1),
-  batchId: z.string().optional().nullable(),
+  classLevel: z.string().optional().nullable(),
   targetRole: z.string().optional(),
+});
+
+export const attendanceMarkSchema = z.object({
+  status: z.enum(["PRESENT", "ABSENT", "LATE"]),
+  date: z.string().optional(),
 });

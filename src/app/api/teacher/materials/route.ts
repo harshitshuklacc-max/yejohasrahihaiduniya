@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const schema = z.object({
-  batchId: z.string(),
+  classLevel: z.string().min(1),
   title: z.string().min(1),
   description: z.string().optional(),
   fileUrl: z.string().url().or(z.string().min(1)),
@@ -17,7 +17,6 @@ export async function GET() {
 
   const items = await prisma.studyMaterial.findMany({
     where: { teacherId: session.teacherId },
-    include: { batch: true },
     orderBy: { createdAt: "desc" },
   });
   return jsonOk(items);
@@ -33,7 +32,7 @@ export async function POST(req: NextRequest) {
       data: { ...body, teacherId: session.teacherId },
     });
     return jsonOk(item, 201);
-  } catch (e) {
+  } catch {
     return jsonError("Invalid data");
   }
 }

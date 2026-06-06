@@ -8,14 +8,10 @@ type DashboardData = {
   student: {
     user: { name: string; username: string; phone?: string };
     classLevel: string;
-    batch?: {
-      name: string;
-      timing?: string;
-      timetable: { dayOfWeek: number; startTime: string; endTime: string; subject: string }[];
-      homeworks: { id: string; title: string; description: string; dueDate: string }[];
-      materials: { id: string; title: string; fileUrl: string; description?: string }[];
-      tests: { id: string; subject: string; testDate: string; startTime?: string; instructions?: string }[];
-    };
+    homeworks: { id: string; title: string; description: string; dueDate: string }[];
+    materials: { id: string; title: string; fileUrl: string; description?: string }[];
+    tests: { id: string; subject: string; testDate: string; startTime?: string; instructions?: string }[];
+    timetable: { dayOfWeek: number; startTime: string; endTime: string; subject: string }[];
     feeRecord?: {
       totalFees: number;
       paidFees: number;
@@ -24,6 +20,7 @@ type DashboardData = {
     };
   };
   announcements: { id: string; title: string; body: string; createdAt: string }[];
+  notifications: { id: string; title: string; body: string; type: string; isRead: boolean; createdAt: string }[];
 };
 
 export function useStudentData() {
@@ -40,16 +37,28 @@ export function StudentOverview() {
   const s = data.student;
   const fee = s.feeRecord;
   const remaining = (fee?.totalFees ?? 0) - (fee?.paidFees ?? 0);
+  const unread = data.notifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Hello, {s.user.name}</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="stat-card"><p className="text-sm text-ssa-muted">Class</p><p className="text-xl font-bold">{s.classLevel}</p></div>
-        <div className="stat-card"><p className="text-sm text-ssa-muted">Batch</p><p className="text-xl font-bold">{s.batch?.name || "—"}</p></div>
+        <div className="stat-card"><p className="text-sm text-ssa-muted">Notifications</p><p className="text-xl font-bold">{unread}</p></div>
         <div className="stat-card"><p className="text-sm text-ssa-muted">Fees Paid</p><p className="text-xl font-bold">{formatPrice(fee?.paidFees ?? 0)}</p></div>
         <div className="stat-card"><p className="text-sm text-ssa-muted">Remaining</p><p className="text-xl font-bold text-ssa-accent">{formatPrice(remaining)}</p></div>
       </div>
+      {data.notifications.length > 0 && (
+        <div className="glass rounded-2xl p-6">
+          <h3 className="font-semibold mb-3">Recent Notifications</h3>
+          {data.notifications.slice(0, 5).map((n) => (
+            <div key={n.id} className="border-b border-white/5 py-3 last:border-0">
+              <p className="font-medium text-sm">{n.title}</p>
+              <p className="text-xs text-ssa-muted mt-1">{n.body.slice(0, 120)}</p>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="glass rounded-2xl p-6">
         <h3 className="font-semibold mb-3">Recent Notices</h3>
         {data.announcements.slice(0, 3).map((a) => (
@@ -94,7 +103,7 @@ export function StudentFeesView() {
 
 export function StudentHomeworkView() {
   const data = useStudentData();
-  const hw = data?.student.batch?.homeworks ?? [];
+  const hw = data?.student.homeworks ?? [];
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Homework</h2>
@@ -114,7 +123,7 @@ export function StudentHomeworkView() {
 
 export function StudentTimetableView() {
   const data = useStudentData();
-  const slots = data?.student.batch?.timetable ?? [];
+  const slots = data?.student.timetable ?? [];
   const byDay = DAYS.map((day, idx) => ({
     day,
     slots: slots.filter((s) => s.dayOfWeek === idx),
@@ -144,7 +153,7 @@ export function StudentTimetableView() {
 
 export function StudentTestsView() {
   const data = useStudentData();
-  const tests = data?.student.batch?.tests ?? [];
+  const tests = data?.student.tests ?? [];
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Test Calendar</h2>
@@ -179,7 +188,7 @@ export function StudentNoticesView() {
 
 export function StudentMaterialsView() {
   const data = useStudentData();
-  const mats = data?.student.batch?.materials ?? [];
+  const mats = data?.student.materials ?? [];
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Study Resources</h2>
@@ -213,7 +222,6 @@ export function StudentProfileView() {
         <p><span className="text-ssa-muted">Name:</span> {u.name}</p>
         <p><span className="text-ssa-muted">Username:</span> {u.username}</p>
         <p><span className="text-ssa-muted">Class:</span> {data.student.classLevel}</p>
-        <p><span className="text-ssa-muted">Batch:</span> {data.student.batch?.name || "—"}</p>
         {u.phone && <p><span className="text-ssa-muted">Phone:</span> {u.phone}</p>}
       </div>
     </div>

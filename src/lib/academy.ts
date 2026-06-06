@@ -76,12 +76,6 @@ export const WHY_CHOOSE = [
   },
 ];
 
-export const BATCHES_INFO = [
-  { name: "Morning Batch", timing: "7:00 AM – 12:00 PM", classes: "5th – 10th" },
-  { name: "Afternoon Batch", timing: "2:00 PM – 6:00 PM", classes: "11th & 12th Commerce" },
-  { name: "Evening Batch", timing: "5:00 PM – 9:00 PM", classes: "5th – 12th" },
-];
-
 export const STATS = [
   { label: "Google Rating", value: "4.9/5", sub: "65+ Reviews" },
   { label: "Student Success", value: "95%+", sub: "Pass Rate" },

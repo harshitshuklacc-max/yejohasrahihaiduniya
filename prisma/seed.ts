@@ -17,25 +17,13 @@ async function main() {
     },
   });
 
-  const faculty = [
-    { name: "Mr. Rajesh Verma", subject: "Mathematics", experience: "12+ years", order: 0 },
-    { name: "Mrs. Priya Sharma", subject: "Science", experience: "10+ years", order: 1 },
-    { name: "Mr. Amit Patel", subject: "Commerce", experience: "8+ years", order: 2 },
-    { name: "Mrs. Sneha Dubey", subject: "English", experience: "9+ years", order: 3 },
-  ];
-
-  for (const f of faculty) {
-    const exists = await prisma.facultyShowcase.findFirst({ where: { name: f.name } });
-    if (!exists) await prisma.facultyShowcase.create({ data: f });
-  }
-
   const testimonials = [
     {
       author: "Rahul S.",
       role: "Class 10 Student",
       rating: 5,
       content:
-        "Smart Step Academy transformed my academics. The teachers are supportive and the batch environment is excellent.",
+        "Smart Step Academy transformed my academics. The teachers are supportive and the learning environment is excellent.",
     },
     {
       author: "Mrs. Kavita M.",
@@ -59,7 +47,7 @@ async function main() {
   }
 
   console.log("✓ Admin seeded (username: Smartstep05618)");
-  console.log("✓ Faculty & testimonials seeded");
+  console.log("✓ Testimonials seeded");
 }
 
 main()

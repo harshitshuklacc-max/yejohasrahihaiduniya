@@ -11,22 +11,21 @@ export async function archiveExpiredStudents() {
     },
     include: {
       user: true,
-      batch: true,
       feeRecord: { include: { payments: true } },
       attendances: true,
     },
   });
 
   for (const student of expired) {
-    const homeworks = student.batchId
-      ? await prisma.homework.findMany({ where: { batchId: student.batchId } })
-      : [];
-    const tests = student.batchId
-      ? await prisma.testSchedule.findMany({ where: { batchId: student.batchId } })
-      : [];
-    const timetable = student.batchId
-      ? await prisma.timetableSlot.findMany({ where: { batchId: student.batchId } })
-      : [];
+    const homeworks = await prisma.homework.findMany({
+      where: { classLevel: student.classLevel },
+    });
+    const tests = await prisma.testSchedule.findMany({
+      where: { classLevel: student.classLevel },
+    });
+    const timetable = await prisma.timetableSlot.findMany({
+      where: { classLevel: student.classLevel },
+    });
     const loginLogs = await prisma.loginActivity.findMany({
       where: { userId: student.userId },
       orderBy: { createdAt: "desc" },
@@ -55,7 +54,6 @@ export async function archiveExpiredStudents() {
       data: {
         isArchived: true,
         archivedAt: new Date(),
-        batchId: null,
       },
     });
 
