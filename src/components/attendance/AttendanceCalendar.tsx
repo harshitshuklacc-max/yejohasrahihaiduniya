@@ -1,50 +1,57 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Record = { date: string; status: "PRESENT" | "ABSENT" | "LATE" };
+type AttendanceRecord = { date: string; status: "PRESENT" | "ABSENT" | "LATE" };
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
 
-export function AttendanceCalendar({ apiPath }: { apiPath: string }) {
+export function AttendanceCalendar({
+  apiPath,
+  personLabel,
+  extraParams,
+}: {
+  apiPath: string;
+  personLabel?: string;
+  extraParams?: Record<string, string>;
+}) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
-  const [records, setRecords] = useState<Record[]>([]);
+  const [records, setRecords] = useState<AttendanceRecord[]>([]);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [matchedName, setMatchedName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [marking, setMarking] = useState(false);
 
   function load() {
     setLoading(true);
-    fetch(`${apiPath}?year=${year}&month=${month}`)
+    const params = new URLSearchParams({
+      year: String(year),
+      month: String(month),
+      ...extraParams,
+    });
+    fetch(`${apiPath}?${params}`)
       .then((r) => r.json())
-      .then((data) => setRecords(data.records ?? []))
+      .then((data) => {
+        setRecords(data.records ?? []);
+        setPdfUrl(data.pdfUrl ?? null);
+        setMatchedName(data.personName ?? data.matchedName ?? null);
+      })
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { load(); }, [year, month, apiPath]);
+  useEffect(() => { load(); }, [year, month, apiPath, JSON.stringify(extraParams)]);
 
   const recordMap = new Map(records.map((r) => [r.date.slice(0, 10), r.status]));
 
   const firstDay = new Date(year, month - 1, 1).getDay();
   const daysInMonth = new Date(year, month, 0).getDate();
   const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-
-  async function markAttendance(status: "PRESENT" | "ABSENT") {
-    setMarking(true);
-    const res = await fetch(apiPath, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    if (res.ok) load();
-    setMarking(false);
-  }
 
   function prevMonth() {
     if (month === 1) { setYear((y) => y - 1); setMonth(12); }
@@ -61,36 +68,41 @@ export function AttendanceCalendar({ apiPath }: { apiPath: string }) {
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
 
+  const presentCount = records.filter((r) => r.status === "PRESENT").length;
+  const absentCount = records.filter((r) => r.status === "ABSENT").length;
+
   return (
     <div className="space-y-6">
-      <div className="glass rounded-2xl p-6">
-        <h3 className="font-semibold mb-4">Mark Today&apos;s Attendance</h3>
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            disabled={marking}
-            onClick={() => markAttendance("PRESENT")}
-            className="btn-primary bg-ssa-success hover:bg-ssa-success/90"
-          >
-            Mark Present
-          </button>
-          <button
-            type="button"
-            disabled={marking}
-            onClick={() => markAttendance("ABSENT")}
-            className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-          >
-            Mark Absent
-          </button>
-        </div>
-        {recordMap.has(todayKey) && (
-          <p className="text-sm text-ssa-muted mt-3">
-            Today: <span className={recordMap.get(todayKey) === "PRESENT" ? "text-ssa-success" : "text-red-400"}>
-              {recordMap.get(todayKey)}
-            </span>
+      {(matchedName || personLabel) && (
+        <div className="glass rounded-2xl p-4">
+          <p className="text-sm text-ssa-muted">Attendance for</p>
+          <p className="font-semibold">{matchedName || personLabel}</p>
+          <p className="text-xs text-ssa-muted mt-1">
+            {presentCount} present · {absentCount} absent this month
           </p>
-        )}
-      </div>
+        </div>
+      )}
+
+      {pdfUrl && (
+        <a
+          href={pdfUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="glass rounded-2xl p-4 flex items-center gap-3 card-hover block"
+        >
+          <FileText className="h-8 w-8 text-ssa-primary shrink-0" />
+          <div>
+            <p className="font-semibold text-sm">Biometric Attendance PDF</p>
+            <p className="text-xs text-ssa-muted">{MONTHS[month - 1]} {year} — View / Download</p>
+          </div>
+        </a>
+      )}
+
+      {!pdfUrl && !loading && records.length === 0 && (
+        <p className="text-ssa-muted text-sm glass rounded-xl p-4">
+          No biometric attendance uploaded for {MONTHS[month - 1]} {year} yet. Admin will add the monthly PDF.
+        </p>
+      )}
 
       <div className="glass rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">

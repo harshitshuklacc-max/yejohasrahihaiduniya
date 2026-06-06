@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatDate, formatPrice, DAYS } from "@/lib/utils";
+import { formatDate, formatPrice } from "@/lib/utils";
 import { Download } from "lucide-react";
 
 type DashboardData = {
@@ -11,7 +11,6 @@ type DashboardData = {
     homeworks: { id: string; title: string; description: string; dueDate: string }[];
     materials: { id: string; title: string; fileUrl: string; description?: string }[];
     tests: { id: string; subject: string; testDate: string; startTime?: string; instructions?: string }[];
-    timetable: { dayOfWeek: number; startTime: string; endTime: string; subject: string }[];
     feeRecord?: {
       totalFees: number;
       paidFees: number;
@@ -117,36 +116,6 @@ export function StudentHomeworkView() {
         </div>
       ))}
       {hw.length === 0 && <p className="text-ssa-muted">No homework assigned.</p>}
-    </div>
-  );
-}
-
-export function StudentTimetableView() {
-  const data = useStudentData();
-  const slots = data?.student.timetable ?? [];
-  const byDay = DAYS.map((day, idx) => ({
-    day,
-    slots: slots.filter((s) => s.dayOfWeek === idx),
-  }));
-
-  return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Timetable</h2>
-      {byDay.map(({ day, slots: daySlots }) =>
-        daySlots.length > 0 ? (
-          <div key={day} className="glass rounded-2xl p-5">
-            <h3 className="font-semibold text-ssa-primary">{day}</h3>
-            <ul className="mt-3 space-y-2">
-              {daySlots.map((s, i) => (
-                <li key={i} className="text-sm flex justify-between">
-                  <span>{s.subject}</span>
-                  <span className="text-ssa-muted">{s.startTime} – {s.endTime}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null
-      )}
     </div>
   );
 }

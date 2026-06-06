@@ -30,18 +30,25 @@ export const studentSchema = z.object({
   password: z.string().optional(),
 });
 
-export const timetableSchema = z.object({
-  classLevel: z.string(),
-  slots: z.array(
-    z.object({
-      dayOfWeek: z.number().min(0).max(6),
-      startTime: z.string(),
-      endTime: z.string(),
-      subject: z.string(),
-      teacherId: z.string().optional(),
-      room: z.string().optional(),
-    })
-  ),
+export const timetableImageSchema = z.object({
+  imageUrl: z.string().min(1),
+  title: z.string().optional(),
+});
+
+export const biometricReportSchema = z.object({
+  month: z.number().min(1).max(12),
+  year: z.number().min(2020).max(2100),
+  pdfUrl: z.string().min(1),
+  personType: z.enum(["STUDENT", "TEACHER"]),
+  records: z
+    .array(
+      z.object({
+        personName: z.string().min(1),
+        date: z.string(),
+        status: z.enum(["PRESENT", "ABSENT", "LATE"]),
+      })
+    )
+    .optional(),
 });
 
 export const homeworkSchema = z.object({
@@ -95,7 +102,3 @@ export const announcementSchema = z.object({
   targetRole: z.string().optional(),
 });
 
-export const attendanceMarkSchema = z.object({
-  status: z.enum(["PRESENT", "ABSENT", "LATE"]),
-  date: z.string().optional(),
-});

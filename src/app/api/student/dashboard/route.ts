@@ -22,7 +22,7 @@ export async function GET() {
 
   if (!student) return jsonError("Student not found", 404);
 
-  const [allHomeworks, allMaterials, allTests, timetable, announcements, notifications] =
+  const [allHomeworks, allMaterials, allTests, announcements, notifications] =
     await Promise.all([
       prisma.homework.findMany({
         where: { classLevel: student.classLevel },
@@ -38,10 +38,6 @@ export async function GET() {
         where: { classLevel: student.classLevel },
         orderBy: { testDate: "asc" },
         take: 20,
-      }),
-      prisma.timetableSlot.findMany({
-        where: { classLevel: student.classLevel },
-        orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
       }),
       prisma.announcement.findMany({
         where: {
@@ -75,7 +71,6 @@ export async function GET() {
       homeworks,
       materials: allMaterials,
       tests,
-      timetable,
     },
     announcements,
     notifications,

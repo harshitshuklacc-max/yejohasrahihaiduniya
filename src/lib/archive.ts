@@ -12,7 +12,6 @@ export async function archiveExpiredStudents() {
     include: {
       user: true,
       feeRecord: { include: { payments: true } },
-      attendances: true,
     },
   });
 
@@ -21,9 +20,6 @@ export async function archiveExpiredStudents() {
       where: { classLevel: student.classLevel },
     });
     const tests = await prisma.testSchedule.findMany({
-      where: { classLevel: student.classLevel },
-    });
-    const timetable = await prisma.timetableSlot.findMany({
       where: { classLevel: student.classLevel },
     });
     const loginLogs = await prisma.loginActivity.findMany({
@@ -36,7 +32,6 @@ export async function archiveExpiredStudents() {
       student,
       homeworks,
       tests,
-      timetable,
       loginLogs,
       archivedReason: "auto_1_year",
     });

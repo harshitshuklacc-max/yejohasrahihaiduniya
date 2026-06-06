@@ -1,9 +1,8 @@
 import { NextRequest } from "next/server";
 import { getStudentSession } from "@/lib/auth";
-import { jsonError, jsonOk, handleZodError } from "@/lib/api-helpers";
+import { jsonError, jsonOk } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
-import { attendanceMarkSchema } from "@/lib/validators";
-import { monthRange, parseAttendanceDate } from "@/lib/attendance";
+import { getBiometricRecordsForPerson } from "@/lib/biometric-attendance";
 
 export async function GET(req: NextRequest) {
   const session = await getStudentSession();
@@ -11,41 +10,21 @@ export async function GET(req: NextRequest) {
 
   const year = Number(req.nextUrl.searchParams.get("year")) || new Date().getFullYear();
   const month = Number(req.nextUrl.searchParams.get("month")) || new Date().getMonth() + 1;
-  const { start, end } = monthRange(year, month);
 
-  const records = await prisma.attendance.findMany({
-    where: {
-      studentId: session.studentId,
-      date: { gte: start, lte: end },
-    },
-    orderBy: { date: "asc" },
+  const student = await prisma.student.findUnique({
+    where: { id: session.studentId },
+    include: { user: { select: { name: true } } },
   });
 
-  return jsonOk({ records });
-}
+  if (!student) return jsonError("Student not found", 404);
 
-export async function POST(req: NextRequest) {
-  const session = await getStudentSession();
-  if (!session?.studentId) return jsonError("Unauthorized", 401);
+  const data = await getBiometricRecordsForPerson({
+    personType: "STUDENT",
+    personName: student.user.name,
+    studentId: student.id,
+    year,
+    month,
+  });
 
-  try {
-    const body = attendanceMarkSchema.parse(await req.json());
-    const date = parseAttendanceDate(body.date);
-
-    const record = await prisma.attendance.upsert({
-      where: {
-        studentId_date: { studentId: session.studentId, date },
-      },
-      create: {
-        studentId: session.studentId,
-        date,
-        status: body.status,
-      },
-      update: { status: body.status },
-    });
-
-    return jsonOk(record);
-  } catch (e) {
-    return handleZodError(e);
-  }
+  return jsonOk(data);
 }
