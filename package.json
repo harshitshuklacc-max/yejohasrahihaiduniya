@@ -7,7 +7,6 @@
     "build": "prisma generate && next build",
     "vercel-build": "node scripts/vercel-build.mjs",
     "start": "next start",
-    "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:reset": "prisma db push --force-reset",
     "db:seed": "node prisma/seed.mjs",
@@ -38,7 +37,7 @@
     "typescript": "^5.8.2"
   },
   "engines": {
-    "node": ">=18.18.0"
+    "node": "20.x"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
