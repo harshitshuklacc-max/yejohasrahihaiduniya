@@ -55,11 +55,21 @@ npm run db:seed
 npm run dev
 ```
 
+## Build command (Vercel)
+
+In **Vercel → Project → Settings → Build & Development Settings**, set:
+
+- **Build Command:** `npm run vercel-build`
+
+(Default `npm run build` only compiles the app; it does **not** sync the database.)
+
 ## Troubleshooting
 
 | Problem | Fix |
 |--------|-----|
-| Build fails on Prisma | Check `DATABASE_URL` and `DIRECT_URL` in Vercel env vars |
+| `npm run vercel-build` exited with 1 | Ensure `DATABASE_URL`, `DIRECT_URL`, and `JWT_SECRET` are set in Vercel env vars, then **Redeploy** |
+| Build fails on Prisma / db push | Same as above; Neon URLs must be valid (pooled + direct) |
+| Schema changed after deploy | Redeploy — build runs `prisma db push --accept-data-loss` to apply schema updates |
 | Admin login: database error | Redeploy after env vars are set; check Neon project is active |
 | Login works but home shows DB warning | Redeploy; confirm Neon allows connections from Vercel |
 

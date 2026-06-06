@@ -7,5 +7,4 @@ node_modules
 .DS_Store
 .vercel
 .tools
-
-.vercel
+.cursor
